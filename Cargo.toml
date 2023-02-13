@@ -1,0 +1,12 @@
+[package]
+name = "spare_buffer"
+version = "0.1.0"
+edition = "2021"
+license-file = "LICENSE"
+description = "A wrapper around Vec that gives access to the “spare” capacity of the vector as a mutable slice."
+homepage = "https://crates.io/crates/spare_buffer"
+documentation = "https://docs.rs/spare_buffer/latest/index.html"
+repository = "https://github.com/dEajL3kA/spare_buffer"
+readme = "README.md"
+
+[dependencies]
