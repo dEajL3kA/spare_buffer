@@ -8,7 +8,7 @@ use std::slice::from_raw_parts_mut;
 
 use crate::Primitive;
 
-/// A wrapper around [**`Vec<T>`**](std::vec::Vec) that gives access to the
+/// A wrapper around [**`Vec<T>`**](std::vec::Vec) that provides access to the
 /// "spare" capacity of the vector as a `&mut[T]` slice.
 /// 
 /// See [module level documentation](crate) for more information.
@@ -102,19 +102,23 @@ where
     /// have been *filled* with valid data. Otherwise, the contents of the
     /// underlying vector are ***unspecified*** after the commit 😨
     /// 
+    /// This function always invalidates the current "spare" buffer. A new
+    /// "spare" buffer must be [allocated](Self::allocate_spare) in order to
+    /// append more data!
+    ///
+    /// # Errors
+    /// 
     /// If a length limit has been specified, then this function will fail, if
     /// adding `additional` more elements to the underlying vector would cause
     /// its total length to exceed the specified limit. Otherwise, the function
     /// always returns `Ok(())`.
-    /// 
-    /// This function always invalidates the current "spare" buffer. A new
-    /// "spare" buffer must be [allocated](Self::allocate_spare) in order to
-    /// append more data!
-    /// 
+    ///
     /// # Panics
     /// 
     /// Panics if `additional` is greater than the available "spare" capacity,
     /// or if **no** "spare" buffer was allocated before!
+    /// 
+    /// A panic may also occur, if the new length would overflow `usize::MAX`.
     pub fn commit(&mut self, additional: usize) -> IoResult<()> {
         assert!(std::mem::replace(&mut self.allocated, false), "No spare buffer allocated!");
         if additional > 0 {
@@ -129,5 +133,16 @@ where
             }
         }
         Ok(())
+    }
+
+    /// The same as [`commit()`](Self::commit) but **without** any checks.
+    /// 
+    /// This function is **`unsafe`**, for obvious reasons, and therefore
+    /// should be used with great care!
+    pub unsafe fn commit_unchecked(&mut self, additional: usize) {
+        self.allocated = false;
+        if additional > 0 {
+            self.buffer.set_len(self.buffer.len() + additional)
+        }
     }
 }
