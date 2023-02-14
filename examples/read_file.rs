@@ -2,13 +2,11 @@
  * Spare Buffer
  * This is free and unencumbered software released into the public domain.
  */
-
 use std::fs::File;
 use std::io::Read;
 use std::num::NonZeroUsize;
 
 use spare_buffer::SpareBuffer;
-
 
 fn main() {
     let mut vec: Vec<u8> = Vec::with_capacity(1048576);

@@ -12,9 +12,51 @@
 //! initialize the memory first. Once filled, the vector can be "extended" into
 //! the previously allocated spare capacity.
 //! 
-//! # Example
+//! The following two steps are always required, usually performed in a loop:
+//! 1. [Allocate](crate::SpareBuffer::allocate_spare) a new "spare" buffer of
+//!    appropriate length.
+//! 2. [Commit](crate::SpareBuffer::commit) the "spare" buffer, once it has
+//!    been filled with some valid data.
 //! 
-//! Read a file into a vector, chunk by chunk, using a `SpareBuffer`:
+//! Note that, after step&nbsp;#1, the "spare" buffer is **not** considered a
+//! valid part of the underlying vector yet. Committing the data, in
+//! step&nbsp;#2, effectively *appends* the contents of the "spare" buffer to
+//! the underlying vector, but **without** copying the data.
+//! 
+//! It is **not** necessary to fill *all* of the "spare" buffer; only the first
+//! `n` elements may be committed. However, *all* elements to be committed
+//! **must** have been initialized, or the contents of the underlying vector
+//! are ***unspecified*** after the commit!
+//! 
+//! # Example #1
+//! 
+//! For starters, fill a pre-allocated [**`SpareBuffer`**](crate::SpareBuffer)
+//! with some numbers:
+//! ```
+//! fn main() {
+//!     let mut vec: Vec<u8> = Vec::with_capacity(128);
+//!     let mut buffer = SpareBuffer::from(&mut vec, None);
+//!
+//!     let spare = buffer.allocate_spare(NonZeroUsize::new(100).unwrap());
+//!     for i in 0..50 {
+//!         spare[i] = i as u8;
+//!     }
+//! 
+//!     // Whoops: only &spare[0..50] was initialized, but 100 elements are committed!
+//!     buffer.commit(100).expect("Failed to commit!");
+//! 
+//!     println!("Expect valid numbers:");
+//!     println!("{:?}\n", &vec[..50]);
+//! 
+//!     println!("Expect \"unspecified\" garbage:");
+//!     println!("{:?}\n", &vec[50..]);
+//! }
+//! ```
+//! 
+//! # Example #2
+//!
+//! Read a file into a vector, chunk by chunk, using a
+//! [**`SpareBuffer`**](crate::SpareBuffer) to accumulate all data:
 //! ```
 //! fn main() {
 //!     let mut vec: Vec<u8> = Vec::with_capacity(1048576);
