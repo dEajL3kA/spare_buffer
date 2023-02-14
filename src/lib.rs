@@ -3,8 +3,8 @@
  * This is free and unencumbered software released into the public domain.
  */
 
-//! A wrapper around [**`Vec<T>`**](std::vec::Vec) that gives access to the
-//! "spare" capacity of the vector as a `&mut[T]` slice. 
+//! A wrapper around [**`Vec<T>`**](std::vec::Vec) that provides access to the
+//! "spare" capacity of the vector as a `&mut[T]` slice.
 //! 
 //! Useful to allocate ["spare" capacity](std::vec::Vec::spare_capacity_mut) at
 //! the end of the underlying vector and fill it *directly*, e.g. by
